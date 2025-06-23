@@ -5,6 +5,7 @@ import { FaChevronRight, FaRegCopy, FaSync, FaUpload } from "react-icons/fa"
 import { SiHuggingface } from "react-icons/si";
 import Image from "next/image";
 import Link from "next/link";
+import { extractTextFromPDF } from "./_client-utils/extractPDF";
 
 export default function Landing() {
 
@@ -21,7 +22,6 @@ export default function Landing() {
 		console.log("Uploaded file", file);
 
 		if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-			const { extractTextFromPDF } = await import("@/app/_client-utils/extractPDF");
 			const extractedText = await extractTextFromPDF(file);
 
 			try {
