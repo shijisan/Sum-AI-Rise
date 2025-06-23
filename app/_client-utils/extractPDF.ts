@@ -7,10 +7,11 @@ export async function extractTextFromPDF(file: File): Promise<string> {
   }
 
   try {
-    const pdfjsLib = await import("pdfjs-dist/webpack"); 
-    const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.entry");
-
-    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+    // Use the legacy build which doesn't have canvas dependency issues
+    const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf");
+    
+    // Set worker source to CDN
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
