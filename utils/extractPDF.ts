@@ -1,10 +1,11 @@
+// utils/extractPDF.ts
 export async function extractTextFromPDF(file: File): Promise<string> {
   try {
-    const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf"); // v3 has this path
+    const pdfjsLib = await import("pdfjs-dist/build/pdf");
+    const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.entry");
 
-    // ✅ Use matching version of the worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    // ✅ Set the correct worker for browser
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;

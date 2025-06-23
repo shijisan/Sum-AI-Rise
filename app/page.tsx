@@ -79,7 +79,7 @@ export default function Landing() {
 							<button className={`btn font-semibold py-3 ${loading ? "bg-amber-100 hover:cursor-not-allowed" : "bg-amber-400"}`}>
 								{loading ?
 									<>
-										Uploading document <FaSync className="animate-spin" />
+										Processing document <FaSync className="animate-spin" />
 									</>
 									:
 									<>
