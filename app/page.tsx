@@ -5,7 +5,11 @@ import { FaChevronRight, FaRegCopy, FaSync, FaUpload } from "react-icons/fa"
 import { SiHuggingface } from "react-icons/si";
 import Image from "next/image";
 import Link from "next/link";
-import { extractTextFromPDF } from "./_client-utils/extractPDF";
+import { extractTextFromPDF } from "@/app/_client-utils/extractPDF"; 
+import { pdfjs } from "react-pdf";
+
+pdfjs.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 export default function Landing() {
 
