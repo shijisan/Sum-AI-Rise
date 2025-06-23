@@ -17,6 +17,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-clash: var(--font-clash);
+  --breakpoint-md: 48.03125rem;
 }
 
 body {
