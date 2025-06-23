@@ -1,7 +1,13 @@
 // app/_client-utils/extractPDF.ts
+
 export async function extractTextFromPDF(file: File): Promise<string> {
+  if (typeof window === "undefined") {
+    console.warn("extractTextFromPDF called on the server!");
+    return "";
+  }
+
   try {
-    const pdfjsLib = await import("pdfjs-dist/build/pdf");
+    const pdfjsLib = await import("pdfjs-dist/webpack"); 
     const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.entry");
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
