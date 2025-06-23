@@ -1,10 +1,9 @@
-// utils/extractPDF.ts
+// app/_client-utils/extractPDF.ts
 export async function extractTextFromPDF(file: File): Promise<string> {
   try {
     const pdfjsLib = await import("pdfjs-dist/build/pdf");
     const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker.entry");
 
-    // ✅ Set the correct worker for browser
     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
     const arrayBuffer = await file.arrayBuffer();

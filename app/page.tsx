@@ -21,7 +21,7 @@ export default function Landing() {
 		console.log("Uploaded file", file);
 
 		if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-			const { extractTextFromPDF } = await import("@/utils/extractPDF");
+			const { extractTextFromPDF } = await import("@/app/_client-utils/extractPDF");
 			const extractedText = await extractTextFromPDF(file);
 
 			try {
