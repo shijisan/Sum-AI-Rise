@@ -113,7 +113,7 @@ export default function Landing() {
 
 
 						<div className="flex flex-col bg-amber-50 rounded-2xl md:w-1/3 w-full grow justify-center items-center p-8 order-3">
-							<h6 className="text-3xl font-clash font-medium">&ldquo;Looks good to me! <br /> I think it's cool!<span className="text-base"><br />- The dev of this tool</span><span><br /><Image className="rounded-full size-10 mt-4 border border-black" src="https://avatars.githubusercontent.com/u/115002067?v=4" width={100} height={100} alt="The developer of this tool's profile picture." /></span></h6>
+							<h6 className="text-3xl font-clash font-medium">&ldquo;Looks good to me! <br /> I think it&apos;s cool!<span className="text-base"><br />- The dev of this tool</span><span><br /><Image className="rounded-full size-10 mt-4 border border-black" src="https://avatars.githubusercontent.com/u/115002067?v=4" width={100} height={100} alt="The developer of this tool's profile picture." /></span></h6>
 
 
 						</div>
