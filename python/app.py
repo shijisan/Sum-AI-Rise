@@ -26,7 +26,7 @@ def clean_text(text: str) -> str:
 @app.post("/summarize")
 async def summarize(input: InputText):
    cleaned_input = clean_text(input.text)
-   prompt = f"summarize: {cleaned_input}"
+   prompt = f"Summarize the following and format it in HTML using <p>, <ul>, <li>, and <strong> where appropriate. Preserve headings too:\n\n: {cleaned_input}"
 
    temp_tokenizer = AutoTokenizer.from_pretrained("sshleifer/distilbart-cnn-12-6")
    input_length = len(temp_tokenizer(prompt)["input_ids"])

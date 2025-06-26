@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  turbopack:{
+
+  },
+  swcMinify: false,
 };
 
 export default nextConfig;

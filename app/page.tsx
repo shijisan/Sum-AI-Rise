@@ -5,53 +5,87 @@ import { FaChevronRight, FaRegCopy, FaSync, FaUpload } from "react-icons/fa"
 import { SiHuggingface } from "react-icons/si";
 import Image from "next/image";
 import Link from "next/link";
-import { extractTextFromPDF } from "@/app/_client-utils/extractPDF"; 
-import { pdfjs } from "react-pdf";
+import Tesseract from "tesseract.js";
 
-pdfjs.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+import { pdfjs } from 'react-pdf';
+
+pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs';
+
+
 
 export default function Landing() {
 
 	const [text, setText] = useState<string>("");
 	const [loading, setLoading] = useState(false);
 	const [copied, setCopied] = useState(false);
+	const [process, setProcess] = useState("Processing document");
 
 	const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
 		setLoading(true);
-
 		console.log("Uploaded file", file);
 
 		if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-			const extractedText = await extractTextFromPDF(file);
+			const reader = new FileReader();
+			reader.onload = async () => {
+				const typedArray = new Uint8Array(reader.result as ArrayBuffer);
+				const pdf = await pdfjs.getDocument({ data: typedArray }).promise;
 
-			try {
-				const res = await fetch("https://shijisan-text-summarization.hf.space/summarize", {
-					method: "POST",
-					headers: {
-						"Content-type": "application/json",
-					},
-					body: JSON.stringify({
-						text: extractedText
-					}),
-				});
-				const data = await res.text();
-				console.log(data);
-				setText(data);
-			}
-			catch (err) {
-				console.error("Failed to summarize text", err);
-			}
-			finally {
-				setLoading(false);
-			}
+				let fullText = "";
+
+				for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+					const page = await pdf.getPage(pageNum);
+					const viewport = page.getViewport({ scale: 2 });
+
+					const canvas = document.createElement("canvas");
+					const context = canvas.getContext("2d")!;
+					canvas.width = viewport.width;
+					canvas.height = viewport.height;
+
+					await page.render({ canvasContext: context, viewport }).promise;
+
+					const imageDataUrl = canvas.toDataURL();
+
+					console.log(`🔍 OCR on page ${pageNum}...`);
+					const {
+						data: { text: extractedText },
+					} = await Tesseract.recognize(imageDataUrl, "eng", {
+						logger: (m) => setProcess(`Page ${pageNum}: ${m.status}: ${Math.round(m.progress * 100)}%`),
+					});
+
+					fullText += `\n\n--- Page ${pageNum} ---\n\n${extractedText}`;
+				}
+
+				console.log("Extracted Text from All Pages:", fullText);
+
+				try {
+					setProcess("Summarizing")
+					const res = await fetch("https://shijisan-text-summarization.hf.space/summarize", {
+						method: "POST",
+						headers: {
+							"Content-type": "application/json",
+						},
+						body: JSON.stringify({
+							text: fullText,
+						}),
+					});
+					const data = await res.text();
+					setText(data);
+				} catch (err) {
+					console.error("Failed to summarize text", err);
+				} finally {
+					setLoading(false);
+				}
+			};
+			reader.readAsArrayBuffer(file);
 		} else {
 			alert("Please upload a PDF file.");
 		}
 	};
+
 
 	const handleCopy = async () => {
 		try {
@@ -83,7 +117,7 @@ export default function Landing() {
 							<button className={`btn font-semibold py-3 ${loading ? "bg-amber-100 hover:cursor-not-allowed" : "bg-amber-400"}`}>
 								{loading ?
 									<>
-										Processing document <FaSync className="animate-spin" />
+										{process} <FaSync className="animate-spin" />
 									</>
 									:
 									<>
@@ -98,7 +132,7 @@ export default function Landing() {
 
 
 
-					<div className="flex md:flex-row flex-col w-full md:px-[10vw] gap-8 mt-8">
+					<div className="flex md:flex-row flex-col md:px-[10vw] gap-8 mt-8 max-h-64 size-full">
 
 						<div className="flex flex-col  space-y-8 grow md:w-1/3 w-full md:order-1 order-2">
 							<Link href="/" className="bg-black rounded-2xl w-full flex items-center justify-center text-white text-3xl font-clash font-semibold hover:cursor-pointer hover:text-amber-400 transition-colors md:h-1/2 h-32">Open Source <FaChevronRight className="inline-flex -mt-1 ms-2" />
@@ -111,15 +145,16 @@ export default function Landing() {
 
 						<div className="w-full max-w-2xl relative grow md:order-2 order-1">
 							<button className="absolute top-4 right-4 btn p-0 hover:text-amber-400 shadow-none" onClick={handleCopy} >{copied ? <>Text copied!</> : <FaRegCopy />}</button>
-							<textarea className="min-h-64 h-full bg-white rounded-2xl w-full px-8 pb-8 pt-12" placeholder="Summarization goes here..." value={text} readOnly >
-							</textarea>
+							<article
+								className="min-h-64 h-full bg-white rounded-2xl w-full px-8 pb-8 pt-12  overflow-y-scroll"
+								dangerouslySetInnerHTML={{ __html: text || "Summarization goes here..." }}
+							/>
+
 						</div>
 
 
 						<div className="flex flex-col bg-amber-50 rounded-2xl md:w-1/3 w-full grow justify-center items-center p-8 order-3">
 							<h6 className="text-3xl font-clash font-medium">&ldquo;Looks good to me! <br /> I think it&apos;s cool!<span className="text-base"><br />- The dev of this tool</span><span><br /><Image className="rounded-full size-10 mt-4 border border-black" src="https://avatars.githubusercontent.com/u/115002067?v=4" width={100} height={100} alt="The developer of this tool's profile picture." /></span></h6>
-
-
 						</div>
 
 					</div>
