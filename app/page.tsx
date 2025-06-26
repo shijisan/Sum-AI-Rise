@@ -8,6 +8,8 @@ import Link from "next/link";
 import { extractDocxText } from "./_client-utils/extractDOCX";
 import { extractPDFText } from "./_client-utils/extractPDF";
 import { extractPPTXText } from "./_client-utils/extractPPTX";
+import { AiFillProduct } from "react-icons/ai";
+
 
 export default function Landing() {
 
@@ -105,7 +107,7 @@ export default function Landing() {
 
 
 
-					<div className="flex md:flex-row flex-col md:px-[10vw] gap-8 mt-8 max-h-64 size-full">
+					<div className="flex md:flex-row flex-col md:px-[10vw] gap-8 mt-8 md:max-h-64 size-full">
 
 						<div className="flex flex-col  space-y-8 grow md:w-1/3 w-full md:order-1 order-2">
 							<Link href="/" className="bg-black rounded-2xl w-full flex items-center justify-center text-white text-3xl font-clash font-semibold hover:cursor-pointer hover:text-amber-400 transition-colors md:h-1/2 h-32">Open Source <FaChevronRight className="inline-flex -mt-1 ms-2" />
@@ -134,9 +136,49 @@ export default function Landing() {
 
 				</header>
 
-				<section className="min-h-screen bg-black">
+				<section className="md:h-screen h-full bg-black text-white flex items-center">
+					<div className="h-fit w-full md:max-w-[1440px] mx-auto flex md:flex-row flex-col items-start md:p-0 p-8 md:gap-0 gap-8">
+						<div className="md:w-1/3 w-full">
+							<h1 className="text-4xl font-clash md:text-start text-center">How each <br className="md:inline hidden" /> process works?</h1>
+						</div>
+						<ul className="md:w-2/3 w-full grid md:grid-cols-2 grid-cols-1 justify-center gap-16">
+							<li className="space-y-2">
+								<div className="flex md:flex-col flex-row items-center md:gap-0 gap-4">
+									<AiFillProduct className="text-5xl text-amber-400 rotate-[270deg]" />
+									<h3 className="font-clash font-medium text-xl">PDF</h3>
+								</div>
+								<h6 className="text-sm text-background">The PDF files uploaded get converted to an image using <span className="text-amber-100">`react-pdf`</span> and is read by Optical Character Recognition via <span className="text-amber-100">`tesseract-js`</span>.</h6>
+							</li>
+							<li className="space-y-2">
+								<div className="flex md:flex-col flex-row items-center md:gap-0 gap-4">
 
+									<AiFillProduct className="text-5xl text-amber-400" />
+									<h3 className="font-clash font-medium text-xl">DOCX</h3>
+								</div>
+								<h6 className="text-sm text-background">These files are run through <span className="text-amber-100">`mammoth`</span> which is a dependency extracts the text from the file.</h6>
+							</li>
+							<li className="space-y-2">
+								<div className="flex md:flex-col flex-row items-center md:gap-0 gap-4">
+
+									<AiFillProduct className="text-5xl text-amber-400 rotate-90" />
+									<h3 className="font-clash font-medium text-xl">PPTX</h3>
+								</div>
+								<h6 className="text-sm text-background">PPTX files are made from XML files so the only process necessary is using <span className="text-amber-100">`JSZIP`</span> to unzip and loop through the slides and cut out formatting elements.</h6>
+							</li>
+							<li className="space-y-2">
+								<div className="flex md:flex-col flex-row items-center md:gap-0 gap-4">
+									<AiFillProduct className="text-5xl text-amber-400 rotate-180" />
+									<h3 className="font-clash font-medium text-xl">Summarization</h3>
+								</div>
+								<h6 className="text-sm text-background">The AI used is hosted in Hugging Face and switches models based on the length of the file. Uses <span className="text-amber-100">`sshleifer/distilbart-cnn-12-6`</span> and <span className="text-amber-100">`pszemraj/led-large-book-summary`</span></h6>
+							</li>
+						</ul>
+					</div>
 				</section>
+
+				<footer className="bg-background w-full">
+					<Link className="font-clash text-xl text-center py-4 w-full inline-block hover:underline" href="https://github.com/shijisan">@shijisan</Link>
+				</footer>
 
 			</main>
 		</>
