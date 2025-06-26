@@ -1,42 +1,38 @@
-"use client";
+"use client"
 
-import * as pdfjsLib from "pdfjs-dist";
-import "pdfjs-dist/build/pdf.worker.entry";
+import { pdfjs } from "react-pdf";
+pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs';
+import Tesseract from "tesseract.js";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+export async function extractPDFText(file: File): Promise<string> {
+	const reader = new FileReader();
 
-export async function extractTextFromPDF(file: File): Promise<string> {
-  if (typeof window === "undefined") {
-    console.warn("extractTextFromPDF called on the server!");
-    return "";
-  }
+	return new Promise((resolve) => {
+		reader.onload = async () => {
+			const typedArray = new Uint8Array(reader.result as ArrayBuffer);
+			const pdf = await pdfjs.getDocument({ data: typedArray }).promise;
 
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+			let result = "";
 
-    const allText: string[] = [];
+			for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+				const page = await pdf.getPage(pageNum);
+				const viewport = page.getViewport({ scale: 2 });
 
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
+				const canvas = document.createElement("canvas");
+				const context = canvas.getContext("2d")!;
+				canvas.width = viewport.width;
+				canvas.height = viewport.height;
 
-      const pageText = content.items
-        .map((item) => {
-          if ("str" in item) {
-            return item.str;
-          }
-          return ""; // for TextMarkedContent
-        })
-        .join(" ");
+				await page.render({ canvasContext: context, viewport }).promise;
+				const imageDataUrl = canvas.toDataURL();
 
-      allText.push(pageText);
-    }
+				const { data: { text } } = await Tesseract.recognize(imageDataUrl, "eng");
+				result += `\n\n--- Page ${pageNum} ---\n\n${text}`;
+			}
 
-    return allText.join("\n\n");
-  } catch (err) {
-    console.error("PDF extraction failed:", err);
-    return "";
-  }
+			resolve(result);
+		};
+
+		reader.readAsArrayBuffer(file);
+	});
 }

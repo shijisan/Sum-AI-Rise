@@ -5,14 +5,9 @@ import { FaChevronRight, FaRegCopy, FaSync, FaUpload } from "react-icons/fa"
 import { SiHuggingface } from "react-icons/si";
 import Image from "next/image";
 import Link from "next/link";
-import Tesseract from "tesseract.js";
-
-
-import { pdfjs } from 'react-pdf';
-
-pdfjs.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs';
-
-
+import { extractDocxText } from "./_client-utils/extractDOCX";
+import { extractPDFText } from "./_client-utils/extractPDF";
+import { extractPPTXText } from "./_client-utils/extractPPTX";
 
 export default function Landing() {
 
@@ -20,71 +15,49 @@ export default function Landing() {
 	const [loading, setLoading] = useState(false);
 	const [copied, setCopied] = useState(false);
 	const [process, setProcess] = useState("Processing document");
+	let fullText = "";
 
 	const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
 		setLoading(true);
-		console.log("Uploaded file", file);
+		setProcess("Uploading document...");
+		console.log("📄 Uploaded file:", file);
 
-		if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-			const reader = new FileReader();
-			reader.onload = async () => {
-				const typedArray = new Uint8Array(reader.result as ArrayBuffer);
-				const pdf = await pdfjs.getDocument({ data: typedArray }).promise;
+		try {
+			if (file.name.endsWith(".pdf")) {
+				fullText = await extractPDFText(file);
+			} else if (file.name.endsWith(".docx")) {
+				fullText = await extractDocxText(file);
+			} else if (file.name.endsWith(".pptx")) {
+				fullText = await extractPPTXText(file);
+			} else {
+				alert("Please upload a PDF, DOCX, or PPTX file.");
+				return;
+			}
 
-				let fullText = "";
+			if (fullText === "") {
+				setText("Failed to scan the file")
+				return;
+			}
 
-				for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-					const page = await pdf.getPage(pageNum);
-					const viewport = page.getViewport({ scale: 2 });
+			setProcess("Summarizing...");
+			const res = await fetch("https://shijisan-text-summarization.hf.space/summarize", {
+				method: "POST",
+				headers: { "Content-type": "application/json" },
+				body: JSON.stringify({ text: fullText }),
+			});
 
-					const canvas = document.createElement("canvas");
-					const context = canvas.getContext("2d")!;
-					canvas.width = viewport.width;
-					canvas.height = viewport.height;
-
-					await page.render({ canvasContext: context, viewport }).promise;
-
-					const imageDataUrl = canvas.toDataURL();
-
-					console.log(`🔍 OCR on page ${pageNum}...`);
-					const {
-						data: { text: extractedText },
-					} = await Tesseract.recognize(imageDataUrl, "eng", {
-						logger: (m) => setProcess(`Page ${pageNum}: ${m.status}: ${Math.round(m.progress * 100)}%`),
-					});
-
-					fullText += `\n\n--- Page ${pageNum} ---\n\n${extractedText}`;
-				}
-
-				console.log("Extracted Text from All Pages:", fullText);
-
-				try {
-					setProcess("Summarizing")
-					const res = await fetch("https://shijisan-text-summarization.hf.space/summarize", {
-						method: "POST",
-						headers: {
-							"Content-type": "application/json",
-						},
-						body: JSON.stringify({
-							text: fullText,
-						}),
-					});
-					const data = await res.text();
-					setText(data);
-				} catch (err) {
-					console.error("Failed to summarize text", err);
-				} finally {
-					setLoading(false);
-				}
-			};
-			reader.readAsArrayBuffer(file);
-		} else {
-			alert("Please upload a PDF file.");
+			const summary = await res.text();
+			setText(summary);
+		} catch (err) {
+			console.error("🚨 Error during file processing:", err);
+		} finally {
+			setLoading(false);
 		}
 	};
+
 
 
 	const handleCopy = async () => {
