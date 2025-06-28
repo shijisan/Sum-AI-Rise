@@ -110,9 +110,9 @@ export default function Landing() {
 					<div className="flex md:flex-row flex-col md:px-[10vw] gap-8 mt-8 md:max-h-64 size-full">
 
 						<div className="flex flex-col  space-y-8 grow md:w-1/3 w-full md:order-1 order-2">
-							<Link href="/" className="bg-black rounded-2xl w-full flex items-center justify-center text-white text-3xl font-clash font-semibold hover:cursor-pointer hover:text-amber-400 transition-colors md:h-1/2 h-32">Open Source <FaChevronRight className="inline-flex -mt-1 ms-2" />
+							<Link href="https://github.com/shijisan/Sum-AI-Rise" className="bg-black rounded-2xl w-full flex items-center justify-center text-white text-3xl font-clash font-semibold hover:cursor-pointer hover:text-amber-400 transition-colors md:h-1/2 h-32">Open Source <FaChevronRight className="inline-flex -mt-1 ms-2" />
 							</Link>
-							<Link href="" className="bg-white hover:bg-amber-50 transition-colors rounded-2xl w-full flex flex-col justify-center text-black text-3xl font-clash font-semibold hover:cursor-pointer p-8 h-1/2">
+							<Link href="https://huggingface.co/spaces/shijisan/text-summarization" className="bg-white hover:bg-amber-50 transition-colors rounded-2xl w-full flex flex-col justify-center text-black text-3xl font-clash font-semibold hover:cursor-pointer p-8 h-1/2">
 								<span>Powered by <span className="text-amber-400">AI</span></span>
 								<span className="self-end">via <span className="text-amber-400">Hugging Face <SiHuggingface className="inline-flex -mt-1" /></span></span>
 							</Link>
